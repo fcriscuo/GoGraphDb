@@ -1,0 +1,151 @@
+package org.batterypakdev.gographdb.go.model
+
+data class GoTerm(
+    val goId: String, val namespace: String, val name: String,
+    val definition: String, val pubmedIdSet: Set<Int>,
+    val synonyms: List<GoSynonym>,
+    val relationshipList: List<Relationship>,
+    val xrefList: List<Xref>
+) {
+    companion object : AbstractModel {
+        /*
+        Function to process a list of text lines encompassing a GO Term
+         */
+        fun generateGoTerm(termlines: List<String>): GoTerm {
+            var goId: String =" "
+            var goName: String =" "
+            var goNamespace: String =" "
+            var goDefinition: String = ""
+            val pass: Unit = Unit
+            termlines.forEach { line ->
+                run {
+                    when (resolveFirstWord(line)) {
+                        "id" -> goId = line.substring(line.indexOf("GO:"))
+                        "name" -> goName = line.substring(6)
+                        "namespace" -> goNamespace = line.substring(11)
+                        "def" -> goDefinition = resolveQuotedString(line)
+                        else -> {}  // ignore other lines
+                    }
+                }
+            }
+                return GoTerm( goId, goNamespace, goName, goDefinition,
+                    resolvePMIDs(termlines),GoSynonym.resolveSynonyms(termlines),
+                    Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
+                )
+            }
+        }
+    }
+
+data class GoSynonym(
+    val synonymText: String,
+    val synonymType: String
+) {
+    companion object : AbstractModel {
+        fun resolveSynonyms(termLines: List<String>): List<GoSynonym> {
+            val synonyms = mutableListOf<GoSynonym>()
+            termLines.filter { line -> line.startsWith("synonym:") }
+                .forEach { syn -> synonyms.add(resolveSynonym(syn)) }
+            return synonyms.toList()
+        }
+
+        private fun resolveSynonym(line: String): GoSynonym {
+            val text = resolveQuotedString(line)
+            val startIndex = line.lastIndexOf('"') + 2
+            val endIndex = startIndex + line.substring(startIndex).indexOf(' ')
+            val type = line.substring(startIndex, endIndex)
+            return GoSynonym(text, type)
+        }
+    }
+
+}
+
+data class Relationship(
+    val type: String,
+    val qualifier: String = "",
+    val targetId: String,
+    val description: String
+) {
+    companion object : AbstractModel {
+
+        private fun relationshipFilter(line: String): Boolean =
+            when (resolveFirstWord(line)) {
+                "is_a", "intersection_of", "relationship" -> true
+                else -> false
+            }
+        fun resolveRelationships(termlines: List<String>): List<Relationship> {
+            val relationships = mutableListOf<Relationship>()
+            termlines.filter { line -> relationshipFilter(line) }
+                .forEach { line -> relationships.add(resolveRelationship(line)) }
+            return relationships
+        }
+        private fun resolveRelationship(line: String): Relationship {
+            val type = resolveFirstWord(line)
+            val targetStart = line.indexOf("GO:")
+            val targetId = line.substring(targetStart, targetStart + 10)
+            val description = line.substring(targetStart + 13)
+            return Relationship(type, resolveQualifier(line), targetId, description)
+        }
+        private fun resolveQualifier(line: String): String {
+            val colonIndex = line.indexOf(":") + 2
+            val goIndex = line.indexOf("GO:")
+            return line.substring(colonIndex, goIndex).trim()
+        }
+    }
+}
+
+data class Xref(
+    val source: String,
+    val id: String,
+    val description: String = ""
+) {
+    companion object : AbstractModel {
+        fun resolveXrefs(termLines: List<String>): List<Xref> {
+            val xrefs = mutableListOf<Xref>()
+            termLines.filter { line -> line.startsWith("xref") }
+                .forEach { line -> xrefs.add(resolveXref(line)) }
+            return xrefs
+        }
+        private fun resolveXref(line: String): Xref {
+            val sourceAndId = line.split(" ")[1].split(":")
+            val source = sourceAndId[0]
+            val id = sourceAndId[1]
+            return Xref(source, id, resolveQuotedString(line))
+
+        }
+    }
+}
+
+fun main() {
+    val synonyms = listOf<String>(
+        "synonym: \"activation of receptor internalization\" NARROW []",
+        "synonym: \"stimulation of receptor internalization\" NARROW []",
+        "synonym: \"up regulation of receptor internalization\" EXACT []",
+        "synonym: \"up-regulation of receptor internalization\" EXACT []",
+        "synonym: \"upregulation of receptor internalization\" EXACT []"
+    )
+    GoSynonym.resolveSynonyms(synonyms).forEach { syn ->
+        println("${syn.synonymText}   ${syn.synonymType}")
+    }
+    val relationships = listOf<String>(
+        "is_a: GO:0006355 ! regulation of transcription, DNA-templated",
+        "is_a: GO:1903047 ! mitotic cell cycle process",
+        "intersection_of: GO:0006355 ! regulation of transcription, DNA-templated",
+        "intersection_of: part_of GO:0000082 ! G1/S transition of mitotic cell cycle",
+        "relationship: part_of GO:0000082 ! G1/S transition of mitotic cell cycle"
+    )
+    Relationship.resolveRelationships(relationships).forEach { rel ->
+        println("${rel.type}   ${rel.qualifier}  ${rel.targetId}   ${rel.description}")
+    }
+
+    val xrefs = listOf<String>(
+        "xref: EC:3.2.1.108",
+        "xref: MetaCyc:LACTASE-RXN",
+        "xref: Reactome:R-HSA-189062 \"lactose + H2O => D-glucose + D-galactose\"",
+        "xref: Reactome:R-HSA-5658001 \"Defective LCT does not hydrolyze Lac\"",
+        "xref: RHEA:10076"
+    )
+    Xref.resolveXrefs(xrefs).forEach { xref ->
+        println("${xref.source}   ${xref.id}  ${xref.description}")
+    }
+}
+
