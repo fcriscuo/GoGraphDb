@@ -1,6 +1,6 @@
 package org.batterypakdev.gographdb.go.model
 
-import org.batterypakdev.gographdb.go.model.GoTerm.Companion.resolvePMIDs
+import org.batterypakdev.gographdb.go.model.GoTerm.Companion.resolvePubMedIdentifiers
 import org.batterypakdev.gographdb.go.model.GoTerm.Companion.resolveQuotedString
 
 /**
@@ -54,33 +54,6 @@ interface AbstractModel {
             true ->text.substring(firstQuote+1,lastQuote)
             false ->""
         }
-    }
-
-    /*
-    Function to resolve a List of PubMed Ids from a GO Term
-    Input parameter is a List of lines comprising a complete
-    GO Term
-    Format is PMID:7722643
-     */
-   fun resolvePMIDs(lines:List<String>):Set<Int> {
-        var pmidSet = mutableSetOf<Int>()
-        val pmidLabel = "PMID"
-        val pmidLength = 12
-        lines.stream().filter { line -> line.contains(pmidLabel) }
-            .forEach { line ->
-                run {
-                    var index = 0
-                    var text = line
-                    while (index != -1) {
-                        index = text.indexOf(pmidLabel)
-                        if (index >=0)
-                           // pmidSet.add(text.substring(index+5, index + pmidLength).toInt())
-                            pmidSet.add(parsePMID(text.substring(index+5)))
-                            text = text.substring(index+1)
-                        }
-                    }
-                }
-        return pmidSet.toSet()
     }
 
     /*
@@ -167,5 +140,5 @@ interface AbstractModel {
      val pmidLine2 = "def: \"The acrosomal membrane region that underlies the acrosomal vesicle and is located toward the sperm nucleus. This region is responsible for molecular interactions allowing the sperm to penetrate the zona pellucida and fuses with the egg plasma membrane.\" [GOC:dph, PMID:3899643, PMID:8936405]"
      val pmidLine3 = "intersection_of: GO:0061025 ! membrane fusion"
      val pmidLines = listOf<String>(pmidLine1, pmidLine3, pmidLine2)
-     resolvePMIDs(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
+     resolvePubMedIdentifiers(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
  }

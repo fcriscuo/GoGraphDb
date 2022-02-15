@@ -39,7 +39,7 @@ class TermlinesChannel( filename:String) {
     fun CoroutineScope.formatGoTerm(goterms: ReceiveChannel<GoTerm>) =
         produce<String> {
             for (goterm in goterms){
-               send("GOTerm  id: ${goterm.goId}  name: ${goterm.name}   PMIDs: ${goterm.pubmedIdSet}")
+               send("GOTerm  id: ${goterm.goId}  name: ${goterm.name}   PMIDs: ${goterm.pubmedIdentifiers}")
                 delay(10)
             }
         }

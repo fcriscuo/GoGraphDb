@@ -1,8 +1,10 @@
 package org.batterypakdev.gographdb.go.model
 
+import org.batterypakdev.gographdb.go.pubmed.model.PubMedIdentifier
+
 data class GoTerm(
     val goId: String, val namespace: String, val name: String,
-    val definition: String, val pubmedIdSet: Set<Int>,
+    val definition: String, val pubmedIdentifiers: List<PubMedIdentifier>,
     val synonyms: List<GoSynonym>,
     val relationshipList: List<Relationship>,
     val xrefList: List<Xref>
@@ -12,9 +14,9 @@ data class GoTerm(
         Function to process a list of text lines encompassing a GO Term
          */
         fun generateGoTerm(termlines: List<String>): GoTerm {
-            var goId: String =" "
-            var goName: String =" "
-            var goNamespace: String =" "
+            var goId: String = " "
+            var goName: String = " "
+            var goNamespace: String = " "
             var goDefinition: String = ""
             val pass: Unit = Unit
             termlines.forEach { line ->
@@ -28,13 +30,45 @@ data class GoTerm(
                     }
                 }
             }
-                return GoTerm( goId, goNamespace, goName, goDefinition,
-                    resolvePMIDs(termlines),GoSynonym.resolveSynonyms(termlines),
-                    Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
-                )
-            }
+            return GoTerm(
+                goId, goNamespace, goName, goDefinition,
+                resolvePubMedIdentifiers(termlines), GoSynonym.resolveSynonyms(termlines),
+                Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
+            )
         }
+
+
+        /*
+    Function to resolve a List of PubMed Ids from a GO Term
+    Input parameter is a List of lines comprising a complete
+    GO Term
+    Format is PMID:7722643
+     */
+        fun resolvePubMedIdentifiers(lines: List<String>): List<PubMedIdentifier> {
+            var pmidSet = mutableSetOf<Int>()
+            val pmidLabel = "PMID"
+            val pmidLength = 12
+            lines.stream().filter { line -> line.contains(pmidLabel) }
+                .forEach { line ->
+                    run {
+                        var index = 0
+                        var text = line
+                        while (index != -1) {
+                            index = text.indexOf(pmidLabel)
+                            if (index >= 0)
+                            // pmidSet.add(text.substring(index+5, index + pmidLength).toInt())
+                                pmidSet.add(parsePMID(text.substring(index + 5)))
+                            text = text.substring(index + 1)
+                        }
+                    }
+                }
+            val pbIdentifiers = mutableListOf<PubMedIdentifier>()
+            pmidSet.forEach { id -> pbIdentifiers.add(PubMedIdentifier(id,0,"Publication"))}
+            return pbIdentifiers.toList()
+        }
+
     }
+}
 
 data class GoSynonym(
     val synonymText: String,
@@ -72,12 +106,14 @@ data class Relationship(
                 "is_a", "intersection_of", "relationship" -> true
                 else -> false
             }
+
         fun resolveRelationships(termlines: List<String>): List<Relationship> {
             val relationships = mutableListOf<Relationship>()
             termlines.filter { line -> relationshipFilter(line) }
                 .forEach { line -> relationships.add(resolveRelationship(line)) }
             return relationships
         }
+
         private fun resolveRelationship(line: String): Relationship {
             val type = resolveFirstWord(line)
             val targetStart = line.indexOf("GO:")
@@ -85,6 +121,7 @@ data class Relationship(
             val description = line.substring(targetStart + 13)
             return Relationship(type, resolveQualifier(line), targetId, description)
         }
+
         private fun resolveQualifier(line: String): String {
             val colonIndex = line.indexOf(":") + 2
             val goIndex = line.indexOf("GO:")
@@ -105,6 +142,7 @@ data class Xref(
                 .forEach { line -> xrefs.add(resolveXref(line)) }
             return xrefs
         }
+
         private fun resolveXref(line: String): Xref {
             val sourceAndId = line.split(" ")[1].split(":")
             val source = sourceAndId[0]
@@ -114,6 +152,7 @@ data class Xref(
         }
     }
 }
+
 
 fun main() {
     val synonyms = listOf<String>(
