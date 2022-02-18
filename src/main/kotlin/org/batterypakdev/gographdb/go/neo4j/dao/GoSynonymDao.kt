@@ -3,8 +3,9 @@ package org.batterypakdev.gographdb.go.neo4j.dao
 import com.google.common.flogger.FluentLogger
 import org.batterypakdev.gographdb.go.model.GoSynonym
 import org.batterypakdev.gographdb.go.model.GoTerm
-import org.batteryparkdev.cosmicgraphdb.neo4j.Neo4jConnectionService
-import org.batteryparkdev.cosmicgraphdb.neo4j.Neo4jUtils
+import org.batterypakdev.gographdb.go.neo4j.Neo4jConnectionService
+import org.batterypakdev.gographdb.go.neo4j.Neo4jUtils
+
 
 /*
 Responsible for creating GoSynonymCollection and GoSynonym nodes

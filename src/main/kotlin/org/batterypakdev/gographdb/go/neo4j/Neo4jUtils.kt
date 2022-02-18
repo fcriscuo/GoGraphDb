@@ -1,4 +1,4 @@
-package org.batteryparkdev.cosmicgraphdb.neo4j
+package org.batterypakdev.gographdb.go.neo4j
 
 import com.google.common.flogger.FluentLogger
 import org.batterypakdev.gographdb.go.pubmed.model.PubMedIdentifier
@@ -110,7 +110,7 @@ object Neo4jUtils {
 
     fun resolvePlaceholderPubMedArticleNodes(): Sequence<PubMedIdentifier> =
         Neo4jConnectionService.executeCypherQuery(emptyNodeQuery)
-            .map{rec -> resolvePubMedIdentifier(rec)}
+            .map{rec -> resolvePubMedIdentifier(rec) }
             .toList().asSequence()
 
 }

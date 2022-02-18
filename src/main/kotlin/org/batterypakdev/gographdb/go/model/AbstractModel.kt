@@ -10,9 +10,9 @@ interface AbstractModel {
     /*
    def isValidString(x:String):Boolean = x != null && x.trim.length> 0
    */
-    fun isValidString(s: String?):Boolean =  !s.isNullOrBlank()
+    fun isValidString(s: String?): Boolean = !s.isNullOrBlank()
 
-    fun parseStringOnSpace(s:String): List<String> = parseStringOnDelimiter(s, " ")
+    fun parseStringOnSpace(s: String): List<String> = parseStringOnDelimiter(s, " ")
 
     fun parseStringOnSemiColon(s: String): List<String> = parseStringOnDelimiter(s, ";")
 
@@ -24,21 +24,21 @@ interface AbstractModel {
 
     fun parseStringOnTab(s: String): List<String> = parseStringOnDelimiter(s, "\t")
 
-    fun parseStringOnEquals(s:String): Pair<String,String>? {
-        val list = parseStringOnDelimiter(s,"=")
-        if ( list.size == 2)
+    fun parseStringOnEquals(s: String): Pair<String, String>? {
+        val list = parseStringOnDelimiter(s, "=")
+        if (list.size == 2)
             return Pair(list[0], list[1])
         return null
     }
 
-    fun resolveFirstWord(text:String):String =
-        parseStringOnSpace(text).first().replace(":","")
+    fun resolveFirstWord(text: String): String =
+        parseStringOnSpace(text).first().replace(":", "")
 
     /*
     Function to remove the first word in space delimited String
     Used to remove GO label (e.g. name)
      */
-    fun removeFirstWord(text:String):String =
+    fun removeFirstWord(text: String): String =
         mutableListOf(parseStringOnSpace(text)).removeFirst()
             .joinToString(" ")
 
@@ -50,35 +50,34 @@ interface AbstractModel {
     fun resolveQuotedString(text: String): String {
         val firstQuote = text.indexOf('"')
         val lastQuote = text.lastIndexOf('"')
-        return when (lastQuote>firstQuote) {
-            true ->text.substring(firstQuote+1,lastQuote)
-            false ->""
+        return when (lastQuote > firstQuote) {
+            true -> text.substring(firstQuote + 1, lastQuote)
+            false -> ""
         }
     }
 
     /*
     The PubMed Id can vary in size from 6 to 8 digits
      */
-    fun parsePMID(pmid:String):Int {
-        var id:String =""
+    fun parsePMID(pmid: String): Int {
+        var id: String = ""
         var index = 0
-        while(pmid[index] in '0'..'9') {
+        while (pmid[index] in '0'..'9') {
             id = id.plus(pmid[index])
-            index +=1
+            index += 1
         }
         return id.toInt()
     }
 
-
-    fun convertYNtoBoolean(ynValue:String): Boolean =
+    fun convertYNtoBoolean(ynValue: String): Boolean =
         ynValue.lowercase() == "y"
 
     fun isNumeric(str: String) = str.all { it in '0'..'9' }
 
     private fun parseStringOnDelimiter(s: String, delimiter: String): List<String> =
-        when(isEmptyString(s)) {
-            true  -> emptyList()
-           false -> s.replace("\"", "").split(delimiter).map { it.trim() }
+        when (isEmptyString(s)) {
+            true -> emptyList()
+            false -> s.replace("\"", "").split(delimiter).map { it.trim() }
         }
 
     fun isHumanSpeciesId(speciesId: String): Boolean = speciesId.trim().equals("9606")
@@ -123,8 +122,9 @@ interface AbstractModel {
     fun parseValidIntegerFromString(s: String): Int =
         when (s.toIntOrNull()) {
             null -> 0
-            else  -> s.toInt()
+            else -> s.toInt()
         }
+
     /*
    Double quotes (i.e. ") inside a text field causes Cypher
    processing errors
@@ -133,12 +133,16 @@ interface AbstractModel {
         text.replace("\"", "'")
 
 }
- fun main() {
-     val goTerm = "def: \"Catalysis of the reaction: all-trans-decaprenyl diphosphate + 4-hydroxybenzoate = 3-decaprenyl-4-hydroxybenzoate + diphosphate.\" [MetaCyc:RXN-9230]"
-     println(resolveQuotedString(goTerm))
-     val pmidLine1 = "def: \"The fusion of the plasma membrane of the sperm with the outer acrosomal membrane.\" [GOC:dph, PMID:3886029, PMID:1234567]"
-     val pmidLine2 = "def: \"The acrosomal membrane region that underlies the acrosomal vesicle and is located toward the sperm nucleus. This region is responsible for molecular interactions allowing the sperm to penetrate the zona pellucida and fuses with the egg plasma membrane.\" [GOC:dph, PMID:3899643, PMID:8936405]"
-     val pmidLine3 = "intersection_of: GO:0061025 ! membrane fusion"
-     val pmidLines = listOf<String>(pmidLine1, pmidLine3, pmidLine2)
-     resolvePubMedIdentifiers(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
- }
+
+fun main() {
+    val goTerm =
+        "def: \"Catalysis of the reaction: all-trans-decaprenyl diphosphate + 4-hydroxybenzoate = 3-decaprenyl-4-hydroxybenzoate + diphosphate.\" [MetaCyc:RXN-9230]"
+    println(resolveQuotedString(goTerm))
+    val pmidLine1 =
+        "def: \"The fusion of the plasma membrane of the sperm with the outer acrosomal membrane.\" [GOC:dph, PMID:3886029, PMID:1234567]"
+    val pmidLine2 =
+        "def: \"The acrosomal membrane region that underlies the acrosomal vesicle and is located toward the sperm nucleus. This region is responsible for molecular interactions allowing the sperm to penetrate the zona pellucida and fuses with the egg plasma membrane.\" [GOC:dph, PMID:3899643, PMID:8936405]"
+    val pmidLine3 = "intersection_of: GO:0061025 ! membrane fusion"
+    val pmidLines = listOf<String>(pmidLine1, pmidLine3, pmidLine2)
+    resolvePubMedIdentifiers(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
+}

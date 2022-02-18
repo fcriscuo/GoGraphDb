@@ -2,12 +2,11 @@
  * Copyright (c) 2021 GenomicDataSci.org
  */
 
-package org.batteryparkdev.cosmicgraphdb.neo4j
+package org.batterypakdev.gographdb.go.neo4j
 
 import com.google.common.flogger.FluentLogger
 import com.google.common.flogger.StackSize
-import org.batteryparkdev.cosmicgraphdb.property.ApplicationPropertiesService
-import org.batteryparkdev.cosmicgraphdb.service.getEnvVariable
+import org.batterypakdev.gographdb.go.service.ApplicationPropertiesService
 import org.neo4j.driver.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -33,6 +32,7 @@ object Neo4jConnectionService {
         uri, AuthTokens.basic(neo4jAccount, neo4jPassword),
         config
     )
+    fun getEnvVariable(varname:String):String = System.getenv(varname) ?: "undefined"
 
     fun close() {
         driver.close()
