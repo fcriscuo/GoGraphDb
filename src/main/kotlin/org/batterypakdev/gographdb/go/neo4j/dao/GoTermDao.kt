@@ -12,16 +12,21 @@ Responsible for data access operations for GoTerm nodes in the neo4j database
 object GoTermDao {
     private val logger: FluentLogger = FluentLogger.forEnclosingClass()
     private const val cypherLoadTemplate = "MERGE (got:GoTerm{ go_id: GOID}) " +
-            " SET got += {go_name: GONAME, go_definition: GODEFINITION} " +
+            " SET got += {go_name:GONAME, go_definition:GODEFINITION} " +
             " RETURN got.go_id"
 
     fun loadGoTermNode( goTerm: GoTerm): String {
-        val merge = cypherLoadTemplate.replace("GOID",
-            Neo4jUtils.formatQuotedString(goTerm.goId)
-                .replace("GONAME", Neo4jUtils.formatQuotedString(goTerm.name))
-                .replace("GODEFINITION",Neo4jUtils.formatQuotedString(goTerm.definition))
-        )
-        return Neo4jConnectionService.executeCypherCommand(merge)
+        try {
+            val merge = cypherLoadTemplate.replace("GOID",
+                Neo4jUtils.formatQuotedString(goTerm.goId))
+                    .replace("GONAME", Neo4jUtils.formatQuotedString(goTerm.name))
+                    .replace("GODEFINITION",Neo4jUtils.formatQuotedString(goTerm.definition))
+            return Neo4jConnectionService.executeCypherCommand(merge)
+        } catch (e: Exception) {
+            logger.atSevere().log(e.message)
+            println("Failed to merge GoTerm: ${goTerm.goId} ${goTerm.name}")
+        }
+        return " "
     }
 
     /*

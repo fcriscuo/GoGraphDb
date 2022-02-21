@@ -20,13 +20,13 @@ object GoSynonymDao {
             " RETURN gsc.go_id"
     private const val cypherRelationshipTemplate = "MATCH (got:GoTerm), (gsc:GoSynonymCollection) " +
             " WHERE got.go_id = GOID  AND gsc.go_id = GOID " +
-            " MERGE (got) - [r:HAS_SYNONYM_COLLECTION] -> (gsc) " +
+            " MERGE (got) - [r:HAS_GO_SYNONYM_COLLECTION] -> (gsc) " +
             " RETURN r"
     private const val synonymLoadTemplate = "MERGE (gos:GoSynonym{synonym_id: SYNID}) " +
             " SET gos += {text: TEXT, type: TYPE} RETURN gos.synonym_id "
     private const val synonymRelationshipTemplate = "MATCH (gsc:GoSynonymCollection), " +
             " (gos:GoSynonym) WHERE gsc.go_id = GOID AND gos.synonym_id = SYNID " +
-            " MERGE (gsc) - [r:HAS_SYNONYM] -> (gos) RETURN r"
+            " MERGE (gsc) - [r:HAS_GO_SYNONYM] -> (gos) RETURN r"
 
     /*
     Create the SynonymCollection node

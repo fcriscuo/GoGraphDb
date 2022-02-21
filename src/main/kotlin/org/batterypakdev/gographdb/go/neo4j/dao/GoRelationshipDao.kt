@@ -24,7 +24,7 @@ object GoRelationshipDao {
     private fun loadGoTermRelationship(goId: String, goRel: Relationship) {
         val cypher = relationshipCypher.replace("SOURCE", Neo4jUtils.formatQuotedString(goId))
             .replace("TARGET", Neo4jUtils.formatQuotedString(goRel.targetId))
-            .replace("RELATIONSHIP", Neo4jUtils.formatQuotedString(goRel.type.uppercase()))
+            .replace("RELATIONSHIP", goRel.type.uppercase())
             .replace("DESCRIPTION", Neo4jUtils.formatQuotedString(goRel.description))
         Neo4jConnectionService.executeCypherCommand(cypher)
     }

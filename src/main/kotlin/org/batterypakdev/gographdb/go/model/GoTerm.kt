@@ -8,7 +8,12 @@ data class GoTerm(
     val synonyms: List<GoSynonym>,
     val relationshipList: List<Relationship>,
     val xrefList: List<Xref>
-) {
+)
+
+{
+    fun isValid():Boolean =
+        (goId.isNotBlank().and(name.isNotBlank().and(namespace.isNotBlank())))
+
     companion object : AbstractModel {
         /*
         Function to process a list of text lines encompassing a GO Term
@@ -18,7 +23,6 @@ data class GoTerm(
             var goName: String = " "
             var goNamespace: String = " "
             var goDefinition: String = ""
-            val pass: Unit = Unit
             termlines.forEach { line ->
                 run {
                     when (resolveFirstWord(line)) {
@@ -30,13 +34,13 @@ data class GoTerm(
                     }
                 }
             }
+
             return GoTerm(
                 goId, goNamespace, goName, goDefinition,
                 resolvePubMedIdentifiers(termlines), GoSynonym.resolveSynonyms(termlines),
                 Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
             )
         }
-
 
         /*
     Function to resolve a List of PubMed Ids from a GO Term
@@ -66,7 +70,6 @@ data class GoTerm(
             pmidSet.forEach { id -> pbIdentifiers.add(PubMedIdentifier(id,0,"Publication"))}
             return pbIdentifiers.toList()
         }
-
     }
 }
 
@@ -90,7 +93,6 @@ data class GoSynonym(
             return GoSynonym(text, type)
         }
     }
-
 }
 
 data class Relationship(

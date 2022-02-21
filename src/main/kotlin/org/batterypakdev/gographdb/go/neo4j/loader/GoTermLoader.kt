@@ -1,5 +1,6 @@
 package org.batterypakdev.gographdb.go.neo4j.loader
 
+import com.google.common.base.Stopwatch
 import com.google.common.flogger.FluentLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,9 +26,11 @@ object GoTermLoader {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.persistGoTermNode(goTerm: GoTerm) =
         produce<GoTerm>{
-            GoTermDao.loadGoTermNode(goTerm)
-            send(goTerm)
-            delay(10)
+            if (goTerm.isValid()) {
+                GoTermDao.loadGoTermNode(goTerm)
+                send(goTerm)
+                delay(30)
+            }
         }
     /*
     Persist the GO Term's synonyms
@@ -36,9 +39,11 @@ object GoTermLoader {
     private fun CoroutineScope.persistGoTermSynonyms(goTerms:ReceiveChannel<GoTerm>) =
         produce<GoTerm> {
            for(goTerm in goTerms){
-               GoSynonymDao.persistGoSynonymData(goTerm)
+               if (goTerm.synonyms.isNotEmpty()) {
+                   GoSynonymDao.persistGoSynonymData(goTerm)
+               }
                send(goTerm)
-               delay(20)
+               delay(10)
            }
         }
 
@@ -49,8 +54,11 @@ object GoTermLoader {
     private fun CoroutineScope.persistGoTermRelationships(goTerms:ReceiveChannel<GoTerm>) =
         produce<String> {
             for (goTerm in goTerms){
-                GoRelationshipDao.loadGoTermRelationships(goTerm)
+                if (goTerm.relationshipList.isNotEmpty()) {
+                    GoRelationshipDao.loadGoTermRelationships(goTerm)
+                }
                 send(goTerm.goId)
+                delay(10)
             }
         }
 
@@ -58,8 +66,19 @@ object GoTermLoader {
     Public function to persist GO Terms into the Neo4j database
      */
     fun loadGoTerm(goTerm: GoTerm) = runBlocking {
-        val goId = persistGoTermRelationships(persistGoTermSynonyms(persistGoTermNode(goTerm)))
-        logger.atInfo().log("GO term: ${goId} has been loaded")
+        var nodeCount = 0
+        val stopwatch = Stopwatch.createStarted()
+        val goIds = persistGoTermRelationships(persistGoTermSynonyms(persistGoTermNode(goTerm)))
+
+        for (goId in goIds) {
+            nodeCount += 1
+        }
+        logger.atInfo().log(
+            "Gene Ontology data loaded " +
+                    " $nodeCount nodes in " +
+                    " ${stopwatch.elapsed(java.util.concurrent.TimeUnit.SECONDS)} seconds"
+        )
+
     }
 
 }
