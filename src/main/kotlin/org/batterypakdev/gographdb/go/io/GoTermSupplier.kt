@@ -7,6 +7,12 @@ import java.io.File
 import java.util.*
 import java.util.function.Supplier
 
+/*
+Responsible for parsing complete Gene Ontology Terms from
+a specified OBO-formatted file
+Utilizes an intermediate object, Termlines, to accommodate the
+variable number of synonyms and relationships in a GO Term
+ */
 class GoTermSupplier(filename: String) : Supplier<Either<Exception, GoTerm>> {
     private val logger: FluentLogger = FluentLogger.forEnclosingClass()
     private val oboScanner = Scanner(File(filename))
@@ -16,7 +22,7 @@ class GoTermSupplier(filename: String) : Supplier<Either<Exception, GoTerm>> {
 
     override fun get(): Either<Exception, GoTerm> {
         val goTerm = generateGoTerm()
-        println("Supplier returning goterm ${goTerm.goId}")
+        logger.atFine().log("Supplier returning goterm ${goTerm.goId}")
         return when (goTerm.isValid()) {
             true -> Either.Right(goTerm)
             false -> Either.Left(Exception("EOF"))
@@ -54,6 +60,9 @@ class GoTermSupplier(filename: String) : Supplier<Either<Exception, GoTerm>> {
     }
 }
 
+/*
+Main function for integration testing
+ */
 fun main(args: Array<String>) {
     val filePathName = if (args.isNotEmpty()) args[0] else "./data/sample_go.obo"
     println("Processing OBO-formatted file: $filePathName")
@@ -69,7 +78,6 @@ fun main(args: Array<String>) {
           }
       }
     }
-
 }
 
 data class Termlines(

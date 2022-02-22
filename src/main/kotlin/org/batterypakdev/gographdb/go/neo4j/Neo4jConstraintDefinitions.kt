@@ -2,7 +2,6 @@ package org.batterypakdev.gographdb.go.neo4j
 
 import com.google.common.flogger.FluentLogger
 
-
 /*
 A collection of Neo4j database constraint definitions in Cypher
 These constraints should be defined prior to loading the database with
@@ -18,7 +17,7 @@ val constraints by lazy {
 
 val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
-fun defineConstraints() {
+fun defineGoDatabaseConstraints() {
     constraints.forEach {
         Neo4jConnectionService.defineDatabaseConstraint(it)
         logger.atInfo().log("Constraint: $it  has been defined")
@@ -27,5 +26,5 @@ fun defineConstraints() {
 
 // stand-alone invocation
 fun main(){
-    defineConstraints()
+    defineGoDatabaseConstraints()
 }
