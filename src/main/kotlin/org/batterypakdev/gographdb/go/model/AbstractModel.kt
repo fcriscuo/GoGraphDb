@@ -144,5 +144,5 @@ fun main() {
         "def: \"The acrosomal membrane region that underlies the acrosomal vesicle and is located toward the sperm nucleus. This region is responsible for molecular interactions allowing the sperm to penetrate the zona pellucida and fuses with the egg plasma membrane.\" [GOC:dph, PMID:3899643, PMID:8936405]"
     val pmidLine3 = "intersection_of: GO:0061025 ! membrane fusion"
     val pmidLines = listOf<String>(pmidLine1, pmidLine3, pmidLine2)
-    resolvePubMedIdentifiers(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
+    //resolvePubMedIdentifiers(pmidLines).stream().forEach { pmid -> println("PMID: $pmid") }
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.batterypakdev.gographdb.go.io.GoTermSupplier
 import org.batterypakdev.gographdb.go.model.GoTerm
+import org.batterypakdev.gographdb.go.neo4j.dao.GoPubMedDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoRelationshipDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoSynonymDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoTermDao
@@ -41,21 +42,22 @@ object GoTermLoader {
                 }
             }
         }
-/*
-Filter out obsolete GO Terms
- */
-@OptIn(ExperimentalCoroutinesApi::class)
-fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
-    produce<GoTerm> {
-        for ( goTerm in goTerms){
-            if (goTerm.definition.uppercase().contains("OBSOLETE").not()) {
-               send(goTerm)
-                delay(10)
-            } else {
-                println("+++++GO term: ${goTerm.goId} has been marked obsolete and will be skipped")
+
+    /*
+    Filter out obsolete GO Terms
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
+        produce<GoTerm> {
+            for (goTerm in goTerms) {
+                if (goTerm.definition.uppercase().contains("OBSOLETE").not()) {
+                    send(goTerm)
+                    delay(10)
+                } else {
+                    println("+++++GO term: ${goTerm.goId} has been marked obsolete and will be skipped")
+                }
             }
         }
-    }
 
     /*
     Persist the GoTerm node
@@ -88,6 +90,21 @@ fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
         }
 
     /*
+    Persist the GO term's publications
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun CoroutineScope.persistFoTermPublications(goTerms: ReceiveChannel<GoTerm>) =
+        produce<GoTerm> {
+            for (goTerm in goTerms) {
+                goTerm.pubmedIdentifiers.forEach { it ->
+                    GoPubMedDao.loadGoPublication(it)
+                }
+                send(goTerm)
+            }
+        }
+
+
+    /*
     Persist the GO Term's relationships to other GO Terms
      */
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -102,6 +119,7 @@ fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
             }
         }
 
+
     /*
     Public function to persist GO Terms into the Neo4j database
      */
@@ -109,10 +127,16 @@ fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
         var nodeCount = 0
         val stopwatch = Stopwatch.createStarted()
         val goIds = persistGoTermRelationships(
-            persistGoTermSynonyms(
-                persistGoTermNode(
-                    filterGoTerms(
-                    supplyGoTerms(filename)))))
+            persistFoTermPublications(
+                persistGoTermSynonyms(
+                    persistGoTermNode(
+                        filterGoTerms(
+                            supplyGoTerms(filename)
+                        )
+                    )
+                )
+            )
+        )
 
         for (goId in goIds) {
             nodeCount += 1
@@ -125,6 +149,7 @@ fun CoroutineScope.filterGoTerms(goTerms: ReceiveChannel<GoTerm>) =
 
     }
 }
+
 fun main(args: Array<String>) {
     val filename = if (args.isNotEmpty()) args[0] else "./data/sample_go.obo"
     GoTermLoader.loadGoTerms(filename)

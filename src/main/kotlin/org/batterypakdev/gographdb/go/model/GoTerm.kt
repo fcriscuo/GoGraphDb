@@ -1,10 +1,10 @@
 package org.batterypakdev.gographdb.go.model
 
-import org.batterypakdev.gographdb.go.pubmed.model.PubMedIdentifier
+import org.batterypakdev.gographdb.go.pubmed.model.GoPubMedIdentifier
 
 data class GoTerm(
     val goId: String, val namespace: String, val name: String,
-    val definition: String, val pubmedIdentifiers: List<PubMedIdentifier>,
+    val definition: String, val pubmedIdentifiers: List<GoPubMedIdentifier>,
     val synonyms: List<GoSynonym>,
     val relationshipList: List<Relationship>,
     val xrefList: List<Xref>
@@ -37,7 +37,7 @@ data class GoTerm(
 
             return GoTerm(
                 goId, goNamespace, goName, goDefinition,
-                resolvePubMedIdentifiers(termlines), GoSynonym.resolveSynonyms(termlines),
+                resolvePubMedIdentifiers(goId,termlines), GoSynonym.resolveSynonyms(termlines),
                 Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
             )
         }
@@ -48,7 +48,7 @@ data class GoTerm(
     GO Term
     Format is PMID:7722643
      */
-        fun resolvePubMedIdentifiers(lines: List<String>): List<PubMedIdentifier> {
+        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<GoPubMedIdentifier> {
             var pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             val pmidLength = 12
@@ -66,8 +66,8 @@ data class GoTerm(
                         }
                     }
                 }
-            val pbIdentifiers = mutableListOf<PubMedIdentifier>()
-            pmidSet.forEach { id -> pbIdentifiers.add(PubMedIdentifier(id,0,"Publication"))}
+            val pbIdentifiers = mutableListOf<GoPubMedIdentifier>()
+            pmidSet.forEach { id -> pbIdentifiers.add(GoPubMedIdentifier(id,goId,"Publication"))}
             return pbIdentifiers.toList()
         }
     }

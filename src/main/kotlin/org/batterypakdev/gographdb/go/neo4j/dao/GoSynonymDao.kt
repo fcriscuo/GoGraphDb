@@ -46,12 +46,13 @@ object GoSynonymDao {
 
     /*
     Create the Synonym node(s) and their relationship to the SynonymCollection Node
+    Unique identifier for a synomym is the GO term id plus an index (e.g. GO:0000001-1)
      */
    private fun addSynonymNodes(goId: String, synonyms: List<GoSynonym>) {
         var index = 1
         synonyms.forEach { syn ->
             run {
-                val synId = Neo4jUtils.formatQuotedString(goId + index.toString())
+                val synId = Neo4jUtils.formatQuotedString(goId.plus("-").plus(index.toString()))
                 val loadCypher = synonymLoadTemplate.replace("SYNID", synId)
                     .replace("TEXT", Neo4jUtils.formatQuotedString(syn.synonymText))
                     .replace("TYPE", Neo4jUtils.formatQuotedString(syn.synonymType))

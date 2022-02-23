@@ -1,7 +1,7 @@
 package org.batterypakdev.gographdb.go.neo4j
 
 import com.google.common.flogger.FluentLogger
-import org.batterypakdev.gographdb.go.pubmed.model.PubMedIdentifier
+import org.batterypakdev.gographdb.go.pubmed.model.GoPubMedIdentifier
 import org.neo4j.driver.Record
 import java.util.*
 
@@ -97,18 +97,17 @@ object Neo4jUtils {
     Private function to map selected items from an
     empty PubMedArticle node into a PubMedIdentifier
      */
-    private fun resolvePubMedIdentifier(record: Record): PubMedIdentifier {
+    private fun resolvePubMedIdentifier(record: Record): GoPubMedIdentifier {
         val recMap = record.asMap()
         val id = recMap.get("c.pubmed_id").toString().toInt()
         val parentId = when (record.get("c.parent_id")) {
-            null -> 0
-            else -> record.get("c.parent_id").toString().toInt()
+            null -> "0"
+            else -> record.get("c.parent_id").toString()
         }
-        val label = if (parentId > 0) "Reference" else "CosmicArticle"
-        return PubMedIdentifier(id, parentId,label)
+        return GoPubMedIdentifier(id, parentId,"Publication")
     }
 
-    fun resolvePlaceholderPubMedArticleNodes(): Sequence<PubMedIdentifier> =
+    fun resolvePlaceholderPubMedArticleNodes(): Sequence<GoPubMedIdentifier> =
         Neo4jConnectionService.executeCypherQuery(emptyNodeQuery)
             .map{rec -> resolvePubMedIdentifier(rec) }
             .toList().asSequence()
