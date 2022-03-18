@@ -11,10 +11,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.batterypakdev.gographdb.go.io.GoTermSupplier
 import org.batterypakdev.gographdb.go.model.GoTerm
-import org.batterypakdev.gographdb.go.neo4j.dao.GoPubMedDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoRelationshipDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoSynonymDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoTermDao
+import org.batteryparkdev.placeholder.dao.PlaceholderNodeDao
 
 /*
 Responsible for loading Gene Ontology nodes and relationships into
@@ -90,19 +90,19 @@ object GoTermLoader {
         }
 
     /*
-    Persist the GO term's publications
+    Create Publication placeholder nodes for this GO Term's PubMed entries
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.persistFoTermPublications(goTerms: ReceiveChannel<GoTerm>) =
         produce<GoTerm> {
             for (goTerm in goTerms) {
-                goTerm.pubmedIdentifiers.forEach { it ->
-                    GoPubMedDao.loadGoPublication(it)
+                goTerm.pubmedPlaceholders.forEach { it ->
+                   // GoPubMedDao.loadGoPublication(it)
+                    PlaceholderNodeDao.persistPlaceholderNode(it)
                 }
                 send(goTerm)
             }
         }
-
 
     /*
     Persist the GO Term's relationships to other GO Terms
@@ -118,7 +118,6 @@ object GoTermLoader {
                 delay(10)
             }
         }
-
 
     /*
     Public function to persist GO Terms into the Neo4j database
@@ -150,7 +149,3 @@ object GoTermLoader {
     }
 }
 
-fun main(args: Array<String>) {
-    val filename = if (args.isNotEmpty()) args[0] else "./data/sample_go.obo"
-    GoTermLoader.loadGoTerms(filename)
-}

@@ -1,6 +1,7 @@
 package org.batterypakdev.gographdb.go.neo4j
 
 import com.google.common.flogger.FluentLogger
+import org.batteryparkdev.neo4j.service.Neo4jConnectionService
 
 /*
 A collection of Neo4j database constraint definitions in Cypher

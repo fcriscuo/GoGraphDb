@@ -3,8 +3,8 @@ package org.batterypakdev.gographdb.go.neo4j.dao
 import com.google.common.flogger.FluentLogger
 import org.batterypakdev.gographdb.go.model.GoSynonym
 import org.batterypakdev.gographdb.go.model.GoTerm
-import org.batterypakdev.gographdb.go.neo4j.Neo4jConnectionService
-import org.batterypakdev.gographdb.go.neo4j.Neo4jUtils
+import org.batteryparkdev.neo4j.service.Neo4jConnectionService
+import org.batteryparkdev.neo4j.service.Neo4jUtils
 
 
 /*
@@ -32,7 +32,7 @@ object GoSynonymDao {
     Create the SynonymCollection node
      */
     private fun addSynonymCollectionNode(goId: String): String {
-        val loadCypher = synCollectLoadTemplate.replace("GOID", Neo4jUtils.formatQuotedString(goId))
+        val loadCypher = synCollectLoadTemplate.replace("GOID", Neo4jUtils.formatPropertyValue(goId))
         return Neo4jConnectionService.executeCypherCommand(loadCypher)
     }
 
@@ -40,7 +40,7 @@ object GoSynonymDao {
     Create a relationship between the GoTerm and the new SynonymCollection Node
      */
     private fun addSynonymCollRelationship(goId: String) {
-        val relCypher = cypherRelationshipTemplate.replace("GOID", Neo4jUtils.formatQuotedString(goId))
+        val relCypher = cypherRelationshipTemplate.replace("GOID", Neo4jUtils.formatPropertyValue(goId))
         Neo4jConnectionService.executeCypherCommand(relCypher)
     }
 
@@ -52,12 +52,12 @@ object GoSynonymDao {
         var index = 1
         synonyms.forEach { syn ->
             run {
-                val synId = Neo4jUtils.formatQuotedString(goId.plus("-").plus(index.toString()))
+                val synId = Neo4jUtils.formatPropertyValue(goId.plus("-").plus(index.toString()))
                 val loadCypher = synonymLoadTemplate.replace("SYNID", synId)
-                    .replace("TEXT", Neo4jUtils.formatQuotedString(syn.synonymText))
-                    .replace("TYPE", Neo4jUtils.formatQuotedString(syn.synonymType))
+                    .replace("TEXT", Neo4jUtils.formatPropertyValue(syn.synonymText))
+                    .replace("TYPE", Neo4jUtils.formatPropertyValue(syn.synonymType))
                 Neo4jConnectionService.executeCypherCommand(loadCypher)
-                val relCypher = synonymRelationshipTemplate.replace("GOID", Neo4jUtils.formatQuotedString(goId))
+                val relCypher = synonymRelationshipTemplate.replace("GOID", Neo4jUtils.formatPropertyValue(goId))
                     .replace("SYNID", synId)
                 Neo4jConnectionService.executeCypherCommand(relCypher)
                 index += 1

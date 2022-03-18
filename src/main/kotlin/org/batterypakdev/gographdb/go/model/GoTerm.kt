@@ -1,17 +1,18 @@
 package org.batterypakdev.gographdb.go.model
 
-import org.batterypakdev.gographdb.go.pubmed.model.GoPubMedIdentifier
+import org.batteryparkdev.neo4j.service.Neo4jUtils
+import org.batteryparkdev.placeholder.model.NodeIdentifier
+import org.batteryparkdev.placeholder.model.PlaceholderNode
 
 data class GoTerm(
     val goId: String, val namespace: String, val name: String,
-    val definition: String, val pubmedIdentifiers: List<GoPubMedIdentifier>,
+    val definition: String,
+    val pubmedPlaceholders: List<PlaceholderNode>,
     val synonyms: List<GoSynonym>,
     val relationshipList: List<Relationship>,
     val xrefList: List<Xref>
-)
-
-{
-    fun isValid():Boolean =
+) {
+    fun isValid(): Boolean =
         (goId.isNotBlank().and(name.isNotBlank().and(namespace.isNotBlank())))
 
     companion object : AbstractModel {
@@ -37,7 +38,7 @@ data class GoTerm(
 
             return GoTerm(
                 goId, goNamespace, goName, goDefinition,
-                resolvePubMedIdentifiers(goId,termlines), GoSynonym.resolveSynonyms(termlines),
+                resolvePubMedIdentifiers(goId, termlines), GoSynonym.resolveSynonyms(termlines),
                 Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
             )
         }
@@ -48,10 +49,14 @@ data class GoTerm(
     GO Term
     Format is PMID:7722643
      */
-        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<GoPubMedIdentifier> {
+        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<PlaceholderNode> {
             var pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             val pmidLength = 12
+            val parentNode = NodeIdentifier(
+                "GoTerm", "go_id",
+                goId
+            )
             lines.stream().filter { line -> line.contains(pmidLabel) }
                 .forEach { line ->
                     run {
@@ -60,14 +65,21 @@ data class GoTerm(
                         while (index != -1) {
                             index = text.indexOf(pmidLabel)
                             if (index >= 0)
-                            // pmidSet.add(text.substring(index+5, index + pmidLength).toInt())
                                 pmidSet.add(parsePMID(text.substring(index + 5)))
                             text = text.substring(index + 1)
                         }
                     }
                 }
-            val pbIdentifiers = mutableListOf<GoPubMedIdentifier>()
-            pmidSet.forEach { id -> pbIdentifiers.add(GoPubMedIdentifier(id,goId,"Publication"))}
+            val pbIdentifiers = mutableListOf<PlaceholderNode>()
+            pmidSet.forEach { id ->
+                run {
+                    val childNode = NodeIdentifier(
+                        "Publication", "pub_id",
+                       id.toString(), "PubMed"
+                    )
+                    pbIdentifiers.add(PlaceholderNode(parentNode, childNode, "HAS_PUBLICATION", "title"))
+                }
+            }
             return pbIdentifiers.toList()
         }
     }

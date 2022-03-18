@@ -72,6 +72,22 @@
     </pluginRepositories>
 
     <dependencies>
+        <!--local dependency for PublicationImporter -->
+        <dependency>
+            <groupId>org.batteryparkdev</groupId>
+            <artifactId>PublicationDataImporter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/PublicationDataImporter-1.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+        <!--local dependency for Neo4jService -->
+        <dependency>
+            <groupId>org.batteryparkdev</groupId>
+            <artifactId>Neo4jService</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Neo4jService-1.0-SNAPSHOT.jar</systemPath>
+        </dependency>
         <!-- add local pubmed parser dependency -->
         <dependency>
             <groupId>ai.wisecube</groupId>
@@ -79,6 +95,16 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/pubmed-parser.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>io.github.microutils</groupId>
+            <artifactId>kotlin-logging-jvm</artifactId>
+            <version>2.1.20</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.10</version>
         </dependency>
         <!-- Neo4j front end requires scala 2.12.13-->
         <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
