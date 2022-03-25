@@ -15,7 +15,7 @@ NEO4J_ACCOUNT and NEO4J_PASSWORD. This allows for easier code sharing without
 exposing Neo4j credentials. The application logs all Neo4j CYPHER commands to a log
 file in the /tmp/logs/neo4j directory. The filenames for these log files contain
 a timestamp component, so they are not overwritten by subsequent executions. The underlying Java Virtual Machine
-for the Kotlin runtime environment is JVM 18.
+for the Kotlin runtime environment is JVM 15.
 
 ### Execution
 The application's main class is org.batteryparkdev.gographdb.go.GoDataImporter. The single input argument
@@ -23,13 +23,20 @@ is the full path name for the OBO-formatted input file.
 
 ### PubMed Support
 GO terms may include PubMed (https://pubmed.ncbi.nlm.nih.gov/) identifiers that associate a GO term with 
-a supporting publication.
+supporting publications.
 The application will create a placeholder Publication node in the Neo4j database and complete a relationship to
 the appropriate GoTerm node(s). It is intended that these empty Publication nodes be completed by an asynchronous 
 data mining application. The rationale for a specialized importer is that NCBI limits web requests to 3 per second
 (10 per second for registered users).This significantly expands the runtime for large data imports and introduces
 reliability issues due to NCBI resource unavailability. The current design allows for the primary GO data to be
 imported in a reasonable time period, while the Publication nodes ar completed asynchronously.
+
+### Java Runtime Environment (JRE) Level
+Although the source code for this application is written in Kotlin, it has a Java dependency,
+the pubmed-parser library available from the thecloudcircle
+account on GitHub (https://github.com/thecloudcircle/pubmed-parser) to map XML data
+received from PubMed to Java JAXB objects. This library is limited to a level 15 JRE. Future application enhancements 
+include finding a PubMed parser without this limitation.
 
 ###Citations:
 1.Ashburner et al. Gene ontology: tool for the unification of biology. Nat Genet. May 2000;25(1):25-9.

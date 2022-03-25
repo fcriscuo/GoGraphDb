@@ -1,7 +1,6 @@
 package org.batterypakdev.gographdb.go.neo4j
 
-import com.google.common.flogger.FluentLogger
-import org.batteryparkdev.neo4j.service.Neo4jConnectionService
+import org.batteryparkdev.neo4j.service.defineConstraints
 
 /*
 A collection of Neo4j database constraint definitions in Cypher
@@ -17,13 +16,8 @@ val constraints by lazy {
     )
 }
 
-val logger: FluentLogger = FluentLogger.forEnclosingClass();
-
 fun defineGoDatabaseConstraints() {
-    constraints.forEach {
-        Neo4jConnectionService.defineDatabaseConstraint(it)
-        logger.atInfo().log("Constraint: $it  has been defined")
-    }
+   defineConstraints(constraints)
 }
 
 // stand-alone invocation

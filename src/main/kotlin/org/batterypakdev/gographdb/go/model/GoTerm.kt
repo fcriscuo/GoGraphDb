@@ -1,13 +1,12 @@
 package org.batterypakdev.gographdb.go.model
 
-import org.batteryparkdev.neo4j.service.Neo4jUtils
-import org.batteryparkdev.placeholder.model.NodeIdentifier
-import org.batteryparkdev.placeholder.model.PlaceholderNode
+import org.batteryparkdev.nodeidentifier.model.NodeIdentifier
+import org.batteryparkdev.nodeidentifier.model.RelationshipDefinition
 
 data class GoTerm(
     val goId: String, val namespace: String, val name: String,
     val definition: String,
-    val pubmedPlaceholders: List<PlaceholderNode>,
+    val pubmedRelationshipDefinitions: List<RelationshipDefinition>,
     val synonyms: List<GoSynonym>,
     val relationshipList: List<Relationship>,
     val xrefList: List<Xref>
@@ -49,7 +48,7 @@ data class GoTerm(
     GO Term
     Format is PMID:7722643
      */
-        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<PlaceholderNode> {
+        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<RelationshipDefinition> {
             var pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             val pmidLength = 12
@@ -70,17 +69,17 @@ data class GoTerm(
                         }
                     }
                 }
-            val pbIdentifiers = mutableListOf<PlaceholderNode>()
+            val relDefinitions = mutableListOf<RelationshipDefinition>()
             pmidSet.forEach { id ->
                 run {
                     val childNode = NodeIdentifier(
                         "Publication", "pub_id",
                        id.toString(), "PubMed"
                     )
-                    pbIdentifiers.add(PlaceholderNode(parentNode, childNode, "HAS_PUBLICATION", "title"))
+                    relDefinitions.add(RelationshipDefinition(parentNode, childNode, "HAS_PUBLICATION"))
                 }
             }
-            return pbIdentifiers.toList()
+            return relDefinitions.toList()
         }
     }
 }

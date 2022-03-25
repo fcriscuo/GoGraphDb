@@ -4,7 +4,8 @@ import com.google.common.flogger.FluentLogger
 import org.batterypakdev.gographdb.go.model.GoTerm
 import org.batteryparkdev.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.neo4j.service.Neo4jUtils
-import org.batteryparkdev.placeholder.model.NodeIdentifier
+import org.batteryparkdev.nodeidentifier.model.NodeIdentifier
+
 
 /*
 Responsible for data access operations for GoTerm nodes in the neo4j database

@@ -14,7 +14,7 @@ import org.batterypakdev.gographdb.go.model.GoTerm
 import org.batterypakdev.gographdb.go.neo4j.dao.GoRelationshipDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoSynonymDao
 import org.batterypakdev.gographdb.go.neo4j.dao.GoTermDao
-import org.batteryparkdev.placeholder.dao.PlaceholderNodeDao
+import org.batteryparkdev.nodeidentifier.dao.NodeIdentifierDao
 
 /*
 Responsible for loading Gene Ontology nodes and relationships into
@@ -96,9 +96,9 @@ object GoTermLoader {
     private fun CoroutineScope.persistFoTermPublications(goTerms: ReceiveChannel<GoTerm>) =
         produce<GoTerm> {
             for (goTerm in goTerms) {
-                goTerm.pubmedPlaceholders.forEach { it ->
+                goTerm.pubmedRelationshipDefinitions.forEach { it ->
                    // GoPubMedDao.loadGoPublication(it)
-                    PlaceholderNodeDao.persistPlaceholderNode(it)
+                    NodeIdentifierDao.defineRelationship(it)
                 }
                 send(goTerm)
             }

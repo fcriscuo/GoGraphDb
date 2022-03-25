@@ -42,6 +42,8 @@ object GoSynonymDao {
     private fun addSynonymCollRelationship(goId: String) {
         val relCypher = cypherRelationshipTemplate.replace("GOID", Neo4jUtils.formatPropertyValue(goId))
         Neo4jConnectionService.executeCypherCommand(relCypher)
+
+
     }
 
     /*
